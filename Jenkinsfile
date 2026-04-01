@@ -1,10 +1,5 @@
-
 pipeline {
     agent any
-
-    tools {
-        sonarRunner 'SonarScanner'
-    }
 
     stages {
 
@@ -26,6 +21,7 @@ pipeline {
         stage('SonarQube Scan') {
             steps {
                 sh '''
+                echo "Running SonarScanner"
                 sonar-scanner \
                   -Dsonar.projectKey=jenkins \
                   -Dsonar.projectName=jenkins \
