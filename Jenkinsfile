@@ -1,18 +1,19 @@
+
 pipeline {
     agent any
 
     stages {
 
-        stage('Checkout') {
+        stage('Checkout Source Code') {
             steps {
                 git url: 'https://github.com/BoobeshP/testpython.git', branch: 'main'
             }
         }
 
-        stage('Show Files') {
+        stage('Show Workspace Files') {
             steps {
                 sh '''
-                echo "==== Files in workspace ===="
+                echo "===== FILES IN WORKSPACE ====="
                 ls -l
                 '''
             }
@@ -21,8 +22,9 @@ pipeline {
         stage('SonarQube Scan') {
             steps {
                 sh '''
-                echo "Running SonarScanner"
-                sonar-scanner \
+                echo "===== RUNNING SONARQUBE SCAN ====="
+
+                /opt/sonar-scanner/bin/sonar-scanner \
                   -Dsonar.projectKey=jenkins \
                   -Dsonar.projectName=jenkins \
                   -Dsonar.sources=. \
@@ -35,10 +37,11 @@ pipeline {
 
     post {
         success {
-            echo '✅ SonarQube scan completed successfully'
+            echo '✅ SonarQube analysis completed SUCCESSFULLY'
         }
         failure {
-            echo '❌ Pipeline failed'
+            echo '❌ SonarQube analysis FAILED'
         }
     }
+}
 }
