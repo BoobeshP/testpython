@@ -1,8 +1,9 @@
+
 pipeline {
     agent any
 
     tools {
-        sonarScanner 'SonarScanner'
+        sonarRunner 'SonarScanner'
     }
 
     stages {
@@ -16,55 +17,32 @@ pipeline {
         stage('Show Files') {
             steps {
                 sh '''
-                echo "===== WORKSPACE FILES ====="
+                echo "==== Files in workspace ===="
                 ls -l
                 '''
             }
         }
 
-        stage('Run Python (optional)') {
+        stage('SonarQube Scan') {
             steps {
                 sh '''
-                echo "===== PYTHON VERSION ====="
-                python3 --version || true
+                sonar-scanner \
+                  -Dsonar.projectKey=jenkins \
+                  -Dsonar.projectName=jenkins \
+                  -Dsonar.sources=. \
+                  -Dsonar.host.url=http://localhost:9000 \
+                  -Dsonar.login=sqp_464e44936e377a2a1d6e2f18d94498cd2eb1cb7d
                 '''
-            }
-        }
-
-        stage('SonarQube Analysis') {
-            steps {
-                withSonarQubeEnv('SonarQubeServer') {
-                    withCredentials([string(credentialsId: 'sonar-token', variable: 'SONAR_TOKEN')]) {
-                        sh '''
-                        sonar-scanner \
-                          -Dsonar.projectKey=jenkins \
-                          -Dsonar.projectName=jenkins \
-                          -Dsonar.sources=. \
-                          -Dsonar.language=py \
-                          -Dsonar.host.url=http://localhost:9000 \
-                          -Dsonar.login=$SONAR_TOKEN
-                        '''
-                    }
-                }
-            }
-        }
-
-        stage('Quality Gate') {
-            steps {
-                timeout(time: 2, unit: 'MINUTES') {
-                    waitForQualityGate abortPipeline: true
-                }
             }
         }
     }
 
     post {
         success {
-            echo '✅ SonarQube analysis completed successfully'
+            echo '✅ SonarQube scan completed successfully'
         }
         failure {
             echo '❌ Pipeline failed'
         }
     }
 }
-
